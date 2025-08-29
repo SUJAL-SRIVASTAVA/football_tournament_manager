@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  ADMIN
+}
+
+enum MatchStatus {
+  UPCOMING
+  LIVE
+  DONE
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  username  String   @unique @map("username")
+  fullName  String   @map("fullName")
+  university String  @map("university")
+  role      UserRole @default(PLAYER) @map("role")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  // Relations
+  player Player?
+
+  @@map("profiles")
+}
+
+model Team {
+  id         String   @id @default(cuid())
+  name       String   @unique @map("name")
+  university String   @map("university")
+  groupLabel String?  @map("groupLabel")
+  createdAt  DateTime @default(now()) @map("createdAt")
+  updatedAt  DateTime @updatedAt @map("updatedAt")
+
+  // Relations
+  players Player[]
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+
+  @@map("teams")
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  profileId String   @unique @map("profileId")
+  teamId    String?  @map("teamId")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  // Relations
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  team    Team?   @relation(fields: [teamId], references: [id])
+  goals   Goal[]
+
+  @@map("players")
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  homeTeamId  String      @map("homeTeamId")
+  awayTeamId  String      @map("awayTeamId")
+  startsAt    DateTime    @map("startsAt")
+  venue       String      @map("venue")
+  status      MatchStatus @default(UPCOMING) @map("status")
+  homeScore   Int         @default(0) @map("homeScore")
+  awayScore   Int         @default(0) @map("awayScore")
+  groupLabel  String?     @map("groupLabel")
+  createdAt   DateTime    @default(now()) @map("createdAt")
+  updatedAt   DateTime    @updatedAt @map("updatedAt")
+
+  // Relations
+  homeTeam Team  @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam Team  @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  goals    Goal[]
+
+  @@map("matches")
+}
+
+model Goal {
+  id        String   @id @default(cuid())
+  matchId   String   @map("matchId")
+  playerId  String   @map("playerId")
+  minute    Int      @map("minute")
+  ownGoal   Boolean  @default(false) @map("ownGoal")
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  // Relations
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id])
+
+  @@map("goals")
+}
