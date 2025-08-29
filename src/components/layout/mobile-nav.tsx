@@ -4,12 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Home, Calendar, Trophy, Settings, LogIn, LogOut, User, Shield } from 'lucide-react'
+import { Home, Calendar, Trophy, Settings, LogIn, LogOut, Shield } from 'lucide-react'
 
 export function MobileNav() {
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
+  const [user, setUser] = useState<null | { id: string }>(null)
+  const [profile, setProfile] = useState<null | { role?: string }>(null)
 
   useEffect(() => {
     checkUser()

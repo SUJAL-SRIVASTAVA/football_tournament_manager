@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -72,41 +72,10 @@ export default function AssignPlayersPage() {
          initialAssignments[player.id] = player.team?.id || 'none'
        })
       setAssignments(initialAssignments)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching data:', error)
-      console.error('Error type:', typeof error)
-      console.error('Error constructor:', error?.constructor?.name)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        name: error?.name,
-        stack: error?.stack
-      })
-      
-      // Try to stringify the error object
-      try {
-        console.error('Full error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
-      } catch (stringifyError) {
-        console.error('Could not stringify error:', stringifyError)
-      }
-      
-      // Better error message handling
-      let errorMessage = 'Failed to load data'
-      if (error?.message) {
-        errorMessage += `: ${error.message}`
-      } else if (error?.details) {
-        errorMessage += `: ${error.details}`
-      } else if (error?.hint) {
-        errorMessage += `: ${error.hint}`
-      } else if (error?.name) {
-        errorMessage += `: ${error.name}`
-      } else {
-        errorMessage += ': Unknown error occurred'
-      }
-      
-      toast.error(errorMessage)
+      const message = error instanceof Error ? error.message : 'Failed to load data'
+      toast.error(message)
     }
   }
 
@@ -136,41 +105,10 @@ export default function AssignPlayersPage() {
 
       toast.success('Player assignments updated successfully!')
       fetchData() // Refresh data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating assignments:', error)
-      console.error('Error type:', typeof error)
-      console.error('Error constructor:', error?.constructor?.name)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        name: error?.name,
-        stack: error?.stack
-      })
-      
-      // Try to stringify the error object
-      try {
-        console.error('Full error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
-      } catch (stringifyError) {
-        console.error('Could not stringify error:', stringifyError)
-      }
-      
-      // Better error message handling
-      let errorMessage = 'Failed to update assignments'
-      if (error?.message) {
-        errorMessage += `: ${error.message}`
-      } else if (error?.details) {
-        errorMessage += `: ${error.details}`
-      } else if (error?.hint) {
-        errorMessage += `: ${error.hint}`
-      } else if (error?.name) {
-        errorMessage += `: ${error.name}`
-      } else {
-        errorMessage += ': Unknown error occurred'
-      }
-      
-      toast.error(errorMessage)
+      const message = error instanceof Error ? error.message : 'Failed to update assignments'
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -190,41 +128,10 @@ export default function AssignPlayersPage() {
 
       toast.success('Player assignment updated!')
       fetchData() // Refresh data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating player assignment:', error)
-      console.error('Error type:', typeof error)
-      console.error('Error constructor:', error?.constructor?.name)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        name: error?.name,
-        stack: error?.stack
-      })
-      
-      // Try to stringify the error object
-      try {
-        console.error('Full error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
-      } catch (stringifyError) {
-        console.error('Could not stringify error:', stringifyError)
-      }
-      
-      // Better error message handling
-      let errorMessage = 'Failed to update assignment'
-      if (error?.message) {
-        errorMessage += `: ${error.message}`
-      } else if (error?.details) {
-        errorMessage += `: ${error.details}`
-      } else if (error?.hint) {
-        errorMessage += `: ${error.hint}`
-      } else if (error?.name) {
-        errorMessage += `: ${error.name}`
-      } else {
-        errorMessage += ': Unknown error occurred'
-      }
-      
-      toast.error(errorMessage)
+      const message = error instanceof Error ? error.message : 'Failed to update assignment'
+      toast.error(message)
     }
   }
 

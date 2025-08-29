@@ -178,9 +178,10 @@ export default function AdminPage() {
       }
       toast.success('Player deleted')
       await Promise.all([fetchPlayers(), fetchDashboardData()])
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e)
-      toast.error(e?.message || 'Failed to delete player')
+      const message = e instanceof Error ? e.message : 'Failed to delete player'
+      toast.error(message)
     }
   }
 
@@ -220,9 +221,10 @@ export default function AdminPage() {
       }
       toast.success('Team deleted')
       await Promise.all([fetchTeams(), fetchDashboardData()])
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e)
-      toast.error(e?.message || 'Failed to delete team')
+      const message = e instanceof Error ? e.message : 'Failed to delete team'
+      toast.error(message)
     }
   }
 
@@ -287,7 +289,7 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                You don't have administrator privileges to access this page.
+                You don&apos;t have administrator privileges to access this page.
               </p>
               <Button onClick={() => router.push('/')} className="w-full">
                 Go Home

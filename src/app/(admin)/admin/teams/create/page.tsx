@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+// Removed Select imports not used on this page
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, Save, AlertTriangle } from 'lucide-react'
@@ -121,41 +121,10 @@ export default function CreateTeamPage() {
 
       toast.success('Team created successfully!')
       router.push('/admin')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating team:', error)
-      console.error('Error type:', typeof error)
-      console.error('Error constructor:', error?.constructor?.name)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        name: error?.name,
-        stack: error?.stack
-      })
-      
-      // Try to stringify the error object
-      try {
-        console.error('Full error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
-      } catch (stringifyError) {
-        console.error('Could not stringify error:', stringifyError)
-      }
-      
-      // Better error message handling
-      let errorMessage = 'Failed to create team'
-      if (error?.message) {
-        errorMessage += `: ${error.message}`
-      } else if (error?.details) {
-        errorMessage += `: ${error.details}`
-      } else if (error?.hint) {
-        errorMessage += `: ${error.hint}`
-      } else if (error?.name) {
-        errorMessage += `: ${error.name}`
-      } else {
-        errorMessage += ': Unknown error occurred'
-      }
-      
-      toast.error(errorMessage)
+      const message = error instanceof Error ? error.message : 'Failed to create team'
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -186,7 +155,7 @@ export default function CreateTeamPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                You don't have administrator privileges to access this page.
+                You don&apos;t have administrator privileges to access this page.
               </p>
               <Button onClick={() => router.push('/')} className="w-full">
                 Go Home

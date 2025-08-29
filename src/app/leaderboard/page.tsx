@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+// Badge import removed as it is not used
 import { createClient } from '@/lib/supabase/client'
 import { Trophy, Medal, Target } from 'lucide-react'
 
@@ -31,7 +31,7 @@ export default function LeaderboardPage() {
   const [topScorers, setTopScorers] = useState<TopScorer[]>([])
   const [teamStats, setTeamStats] = useState<TeamStats[]>([])
   const [loading, setLoading] = useState(true)
-  const supabaseRef = useRef<any>(null)
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   useEffect(() => {
     fetchLeaderboardData()
