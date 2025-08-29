@@ -33,6 +33,7 @@ export default function CreateMatchPage() {
     fetchTeams()
   }, [])
 
+  // Fetch teams safely with TypeScript
   const fetchTeams = async () => {
     try {
       const supabase = createClient()
@@ -44,11 +45,17 @@ export default function CreateMatchPage() {
       if (error) throw error
       setTeams(data || [])
     } catch (error) {
-      console.error('Error fetching teams:', error)
-      toast.error('Failed to load teams')
+      if (error instanceof Error) {
+        console.error('Error fetching teams:', error.message)
+        toast.error(`Failed to load teams: ${error.message}`)
+      } else {
+        console.error('Unknown error fetching teams:', error)
+        toast.error('Failed to load teams: Unknown error')
+      }
     }
   }
 
+  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -60,7 +67,6 @@ export default function CreateMatchPage() {
     }
 
     try {
-      // Use admin API to avoid RLS issues and ensure consistent schema writes
       const resp = await fetch('/api/admin/matches/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,6 +80,7 @@ export default function CreateMatchPage() {
           awayScore: 0
         })
       })
+
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}))
         throw new Error(err.message || 'Failed to create match')
@@ -82,14 +89,13 @@ export default function CreateMatchPage() {
       toast.success('Match scheduled successfully!')
       router.push('/admin')
     } catch (error) {
-      console.error('Error creating match:', error)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
-      })
-      toast.error(`Failed to schedule match: ${error?.message || 'Unknown error'}`)
+      if (error instanceof Error) {
+        console.error('Error creating match:', error.message)
+        toast.error(`Failed to schedule match: ${error.message}`)
+      } else {
+        console.error('Unknown error creating match:', error)
+        toast.error('Failed to schedule match: Unknown error')
+      }
     } finally {
       setLoading(false)
     }
@@ -126,21 +132,21 @@ export default function CreateMatchPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="homeTeamId">Home Team *</Label>
-                                          <Select
-                          value={formData.homeTeamId || ''}
-                          onValueChange={(value) => handleInputChange('homeTeamId', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select home team" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teams.map((team) => (
-                              <SelectItem key={team.id} value={team.id || ''}>
-                                {team.name} ({team.university})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                  <Select
+                    value={formData.homeTeamId || ''}
+                    onValueChange={(value) => handleInputChange('homeTeamId', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select home team" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id || ''}>
+                          {team.name} ({team.university})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
