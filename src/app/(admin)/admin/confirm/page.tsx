@@ -359,11 +359,10 @@
 
 // 
 
-
 "use client"
 
 import { useEffect, useState } from "react"
-import { createAdminClient } from "@/lib/supabase/admin"
+// import { createAdminClient } from "@/lib/supabase/admin"
 import { toast } from "sonner"
 
 // ✅ Cleaned-up AdminRequest type
@@ -390,51 +389,11 @@ export default function ConfirmAdminPage() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
+        // No Supabase calls - just set loading to false
         setLoading(false)
-        // Commented out to avoid Supabase calls
-        /*
-        const supabase = createAdminClient()
-        const { data, error } = await supabase
-          .from("admin_requests")
-          .select(`
-            id,
-            userId,
-            status,
-            requestedAt,
-            reviewedBy,
-            reviewedAt,
-            reason,
-            user (
-              email,
-              fullName,
-              username,
-              university
-            )
-          `)
-
-        if (error) throw error
-
-        const formatted = (data || []).map((req: any) => {
-          const userData = Array.isArray(req.user) ? req.user[0] : req.user;
-          
-          return {
-            ...req,
-            user: {
-              email: userData?.email ?? "",
-              fullName: userData?.fullName ?? "",
-              username: userData?.username ?? "",
-              university: userData?.university ?? "",
-            },
-          };
-        })
-
-        setRequests(formatted)
-        */
       } catch (error) {
         console.error("Error fetching admin requests:", error)
         toast.error("Failed to load admin requests")
-      } finally {
-        setLoading(false)
       }
     }
 
