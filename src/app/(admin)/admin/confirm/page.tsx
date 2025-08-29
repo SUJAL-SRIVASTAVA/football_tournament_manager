@@ -357,158 +357,102 @@
 //   )
 // }
 
+"use client"
 
-'use client'
+import { useEffect, useState } from "react"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { toast } from "sonner"
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'react-hot-toast'
-
-interface AdminRequest {
+// ✅ Cleaned-up AdminRequest type
+type AdminRequest = {
   id: string
   userId: string
+  status: string
+  requestedAt: string
+  reviewedBy: string | null
+  reviewedAt: string | null
+  reason: string | null
   user: {
     email: string
-    profile: {
-      fullName: string
-      username: string
-      university: string
-    }
+    fullName: string
+    username: string
+    university: string
   }
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
-  requestedAt: string
-  reviewedBy?: string
-  reviewedAt?: string
-  reason?: string
 }
 
-export default function ConfirmRequestsPage() {
+export default function ConfirmAdminPage() {
   const [requests, setRequests] = useState<AdminRequest[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchAdminRequests()
+    const fetchRequests = async () => {
+      try {
+        const supabase = createAdminClient()
+        const { data, error } = await supabase
+          .from("admin_requests")
+          .select(`
+            id,
+            userId,
+            status,
+            requestedAt,
+            reviewedBy,
+            reviewedAt,
+            reason,
+            user (
+              email,
+              fullName,
+              username,
+              university
+            )
+          `)
+
+        if (error) throw error
+
+        // ✅ Map directly to our AdminRequest type
+        const formatted = (data || []).map((req: any) => ({
+          ...req,
+          user: {
+            email: req.user?.email ?? "",
+            fullName: req.user?.fullName ?? "",
+            username: req.user?.username ?? "",
+            university: req.user?.university ?? "",
+          },
+        }))
+
+        setRequests(formatted)
+      } catch (error) {
+        console.error("Error fetching admin requests:", error)
+        toast.error("Failed to load admin requests")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRequests()
   }, [])
 
-  const fetchAdminRequests = async () => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('admin_requests')
-        .select(`
-          id,
-          userId,
-          status,
-          requestedAt,
-          reviewedBy,
-          reviewedAt,
-          reason,
-          user:profiles (
-            email,
-            fullName,
-            username,
-            university
-          )
-        `)
-
-      if (error) throw error
-
-      // 🔥 Normalize the response to match AdminRequest type
-      const normalized: AdminRequest[] = (data || []).map((r: any) => ({
-        id: r.id,
-        userId: r.userId,
-        status: r.status,
-        requestedAt: r.requestedAt,
-        reviewedBy: r.reviewedBy,
-        reviewedAt: r.reviewedAt,
-        reason: r.reason,
-        user: {
-          email: r.user?.email ?? '',
-          profile: {
-            fullName: r.user?.fullName ?? '',
-            username: r.user?.username ?? '',
-            university: r.user?.university ?? ''
-          }
-        }
-      }))
-
-      setRequests(normalized)
-    } catch (error) {
-      console.error('Error fetching admin requests:', error)
-      toast.error('Failed to load admin requests')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRequest = async (id: string, status: 'APPROVED' | 'REJECTED') => {
-    try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('admin_requests')
-        .update({ status, reviewedAt: new Date().toISOString() })
-        .eq('id', id)
-
-      if (error) throw error
-
-      toast.success(`Request ${status.toLowerCase()} successfully!`)
-      fetchAdminRequests()
-    } catch (error) {
-      console.error(`Error updating request:`, error)
-      toast.error('Failed to update request')
-    }
-  }
-
-  if (loading) return <p className="p-4">Loading requests...</p>
+  if (loading) return <p>Loading...</p>
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Admin Requests</h1>
-      <div className="grid gap-4 md:grid-cols-2">
-        {requests.map((request) => (
-          <Card key={request.id}>
-            <CardHeader>
-              <CardTitle>{request.user.profile.fullName}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>
-                <strong>Email:</strong> {request.user.email}
-              </p>
-              <p>
-                <strong>Username:</strong> {request.user.profile.username}
-              </p>
-              <p>
-                <strong>University:</strong> {request.user.profile.university}
-              </p>
-              <p>
-                <strong>Status:</strong> {request.status}
-              </p>
-              <p>
-                <strong>Requested At:</strong>{' '}
-                {new Date(request.requestedAt).toLocaleString()}
-              </p>
-              {request.status === 'PENDING' && (
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    onClick={() => handleRequest(request.id, 'APPROVED')}
-                    className="bg-green-600 text-white hover:bg-green-700"
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    onClick={() => handleRequest(request.id, 'REJECTED')}
-                    className="bg-red-600 text-white hover:bg-red-700"
-                  >
-                    Reject
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <h1 className="text-2xl font-bold mb-4">Admin Requests</h1>
+      {requests.length === 0 ? (
+        <p>No requests found.</p>
+      ) : (
+        <ul className="space-y-4">
+          {requests.map((req) => (
+            <li key={req.id} className="border p-4 rounded-lg shadow">
+              <p><strong>Email:</strong> {req.user.email}</p>
+              <p><strong>Full Name:</strong> {req.user.fullName}</p>
+              <p><strong>Username:</strong> {req.user.username}</p>
+              <p><strong>University:</strong> {req.user.university}</p>
+              <p><strong>Status:</strong> {req.status}</p>
+              <p><strong>Requested At:</strong> {req.requestedAt}</p>
+              {req.reason && <p><strong>Reason:</strong> {req.reason}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
