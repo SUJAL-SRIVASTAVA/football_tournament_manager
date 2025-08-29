@@ -93,7 +93,24 @@ export default function AdminConfirmationPage() {
         .order('requestedAt', { ascending: false })
 
       if (error) throw error
-      setRequests(data || [])
+      const normalized: AdminRequest[] = (data || []).map((r: any) => ({
+        id: r.id,
+        userId: r.userId,
+        status: r.status,
+        requestedAt: r.requestedAt,
+        reviewedBy: r.reviewedBy,
+        reviewedAt: r.reviewedAt,
+        reason: r.reason,
+        user: {
+          email: r.user?.email ?? '',
+          profile: {
+            fullName: r.user?.fullName ?? '',
+            username: r.user?.username ?? '',
+            university: r.user?.university ?? ''
+          }
+        }
+      }))
+      setRequests(normalized)
     } catch (error) {
       console.error('Error fetching admin requests:', error)
       toast.error('Failed to load admin requests')
