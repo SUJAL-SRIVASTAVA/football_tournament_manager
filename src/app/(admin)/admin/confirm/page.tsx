@@ -357,6 +357,9 @@
 //   )
 // }
 
+// 
+
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -387,6 +390,9 @@ export default function ConfirmAdminPage() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
+        setLoading(false)
+        // Commented out to avoid Supabase calls
+        /*
         const supabase = createAdminClient()
         const { data, error } = await supabase
           .from("admin_requests")
@@ -408,18 +414,22 @@ export default function ConfirmAdminPage() {
 
         if (error) throw error
 
-        // ✅ Map directly to our AdminRequest type
-        const formatted = (data || []).map((req: any) => ({
-          ...req,
-          user: {
-            email: req.user?.email ?? "",
-            fullName: req.user?.fullName ?? "",
-            username: req.user?.username ?? "",
-            university: req.user?.university ?? "",
-          },
-        }))
+        const formatted = (data || []).map((req: any) => {
+          const userData = Array.isArray(req.user) ? req.user[0] : req.user;
+          
+          return {
+            ...req,
+            user: {
+              email: userData?.email ?? "",
+              fullName: userData?.fullName ?? "",
+              username: userData?.username ?? "",
+              university: userData?.university ?? "",
+            },
+          };
+        })
 
         setRequests(formatted)
+        */
       } catch (error) {
         console.error("Error fetching admin requests:", error)
         toast.error("Failed to load admin requests")
