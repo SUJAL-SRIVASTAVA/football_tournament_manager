@@ -70,6 +70,16 @@ export default function HomePage() {
         <p className="text-sm text-muted-foreground">
           Scan QR code to register • Live updates • Mobile optimized
         </p>
+        <p>
+  <a 
+    href="https://www.linkedin.com/in/sujal-srivastava-27b790303" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    className="underline hover:text-blue-600"
+  >
+    SUJAL SRIVASTAVA
+  </a>
+</p>
       </div>
     </div>
   )
