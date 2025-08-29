@@ -134,7 +134,7 @@ export default function AdminConfirmationPage() {
     }
   }
 
-  const handleRejectRequest = async (requestId: string, userId: string) => {
+  const handleRejectRequest = async (requestId: string, _userId: string) => {
     try {
       const supabase = createClient()
       
@@ -191,7 +191,7 @@ export default function AdminConfirmationPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                You don't have administrator privileges to access this page.
+                You don&apos;t have administrator privileges to access this page.
               </p>
               <Button onClick={() => router.push('/')} className="w-full">
                 Go Home

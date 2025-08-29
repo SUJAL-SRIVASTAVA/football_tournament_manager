@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { ArrowLeft, Play, Pause, Square, Plus, Minus, Save } from 'lucide-react'
+import { ArrowLeft, Play, Square, Plus, Minus, Save } from 'lucide-react'
 
 interface Match {
   id: string
@@ -22,6 +22,27 @@ interface Match {
   homeScore: number
   awayScore: number
   description?: string
+  homeTeamId: string
+  awayTeamId: string
+}
+
+type PlayerRow = { id: string; profile: { fullName: string } }
+
+const toSafeErrorDetails = (err: unknown) => {
+  const obj = (typeof err === 'object' && err !== null) ? (err as Record<string, unknown>) : {}
+  return {
+    message: typeof obj.message === 'string' ? obj.message : undefined,
+    code: obj.code,
+    details: obj.details,
+    hint: obj.hint
+  }
+}
+
+const toErrorMessage = (err: unknown): string => {
+  if (err instanceof Error && err.message) return err.message
+  const details = toSafeErrorDetails(err)
+  if (details.message) return details.message
+  return 'Unknown error'
 }
 
 export default function LiveMatchControlPage() {
@@ -56,14 +77,14 @@ export default function LiveMatchControlPage() {
           supabase
             .from('players')
             .select('id, profile:profiles(fullName)')
-            .eq('teamId', (selectedMatch as any).homeTeamId),
+            .eq('teamId', selectedMatch.homeTeamId),
           supabase
             .from('players')
             .select('id, profile:profiles(fullName)')
-            .eq('teamId', (selectedMatch as any).awayTeamId)
+            .eq('teamId', selectedMatch.awayTeamId)
         ])
-        setHomePlayers((homeRes.data || []).map((p: any) => ({ id: p.id, name: p.profile.fullName })))
-        setAwayPlayers((awayRes.data || []).map((p: any) => ({ id: p.id, name: p.profile.fullName })))
+        setHomePlayers(((homeRes.data || []) as PlayerRow[]).map((p) => ({ id: p.id, name: p.profile.fullName })))
+        setAwayPlayers(((awayRes.data || []) as PlayerRow[]).map((p) => ({ id: p.id, name: p.profile.fullName })))
         setGoalPlayerId('')
         setGoalMinute('')
         setGoalTeam('home')
@@ -107,13 +128,8 @@ export default function LiveMatchControlPage() {
       }
     } catch (error) {
       console.error('Error fetching matches:', error)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
-      })
-      toast.error(`Failed to load matches: ${error?.message || 'Unknown error'}`)
+      console.error('Error details:', toSafeErrorDetails(error))
+      toast.error(`Failed to load matches: ${toErrorMessage(error)}`)
     }
   }
 
@@ -133,13 +149,8 @@ export default function LiveMatchControlPage() {
       fetchMatches()
     } catch (error) {
       console.error('Error starting match:', error)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
-      })
-      toast.error(`Failed to start match: ${error?.message || 'Unknown error'}`)
+      console.error('Error details:', toSafeErrorDetails(error))
+      toast.error(`Failed to start match: ${toErrorMessage(error)}`)
     } finally {
       setLoading(false)
     }
@@ -162,13 +173,8 @@ export default function LiveMatchControlPage() {
       setSelectedMatch(null)
     } catch (error) {
       console.error('Error ending match:', error)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
-      })
-      toast.error(`Failed to end match: ${error?.message || 'Unknown error'}`)
+      console.error('Error details:', toSafeErrorDetails(error))
+      toast.error(`Failed to end match: ${toErrorMessage(error)}`)
     } finally {
       setLoading(false)
     }
@@ -192,13 +198,8 @@ export default function LiveMatchControlPage() {
       fetchMatches()
     } catch (error) {
       console.error('Error updating score:', error)
-      console.error('Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
-      })
-      toast.error(`Failed to update score: ${error?.message || 'Unknown error'}`)
+      console.error('Error details:', toSafeErrorDetails(error))
+      toast.error(`Failed to update score: ${toErrorMessage(error)}`)
     } finally {
       setLoading(false)
     }
@@ -237,8 +238,8 @@ export default function LiveMatchControlPage() {
         awayScore: prev.awayScore + (goalTeam === 'away' ? 1 : 0)
       }))
       toast.success('Goal recorded! Remember to Update Score to sync the match score.')
-    } catch (e: any) {
-      toast.error(e?.message || 'Failed to record goal')
+    } catch (e: unknown) {
+      toast.error(toErrorMessage(e) || 'Failed to record goal')
     } finally {
       setLoading(false)
     }
